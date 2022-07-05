@@ -38,6 +38,7 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupRecyclerView()
 
         lifecycleScope.launchWhenStarted {
             viewModel.getAuthToken().collect{
@@ -48,7 +49,6 @@ class HomeActivity : AppCompatActivity() {
             }
         }
         setSwipeRefreshLayout()
-        setupRecyclerView()
         clickButton()
     }
 

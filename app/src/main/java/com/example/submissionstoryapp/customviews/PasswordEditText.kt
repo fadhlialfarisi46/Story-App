@@ -7,10 +7,10 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
 import android.util.AttributeSet
-import androidx.appcompat.widget.AppCompatEditText
 import com.example.submissionstoryapp.R
+import com.google.android.material.textfield.TextInputEditText
 
-class PasswordEditText : AppCompatEditText {
+class PasswordEditText : TextInputEditText {
     constructor(context: Context) : super(context) {
         init()
     }
