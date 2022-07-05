@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Story App</string>
+    <string name="story_app">Story App</string>
+    <string name="masuk">Login</string>
+    <string name="email">Email</string>
+    <string name="kata_sandi">Password</string>
+    <string name="to_daftar">Don\'t have an account? <font color="#0c87f2">Click to Register!</font></string>
+    <string name="to_masuk">Already have an account? <font color="#0c87f2">Click to Login!</font></string>
+    <string name="daftar">Register</string>
+    <string name="nama_lengkap">Full name</string>
+    <string name="hint_unggah">Uploaded on %s</string>
+    <string name="pengaturan">Settings</string>
+    <string name="tambah">Add</string>
+    <string name="gambar">Gambar</string>
+    <string name="galeri">Gallery</string>
+    <string name="kamera">Camera</string>
+    <string name="pilih_gambar">Choose an image from:</string>
+    <string name="deskripsi">Description</string>
+    <string name="unggah">Upload</string>
+    <string name="eror_login">Please try again!</string>
+    <string name="daftar_berhasil">Register successful!</string>
+    <string name="daftar_gagal">Register failed, Try again!</string>
+    <string name="empty_desc">Description cannot be empty</string>
+    <string name="empty_story">Image cannot be empty</string>
+    <string name="upload_success">Upload Successful</string>
+    <string name="upload_fail">Upload failed</string>
+    <string name="eror_email">Email format doesn\'t match</string>
+    <string name="eror_sandi">Password minimum 6 characters</string>
+    <string name="keluar">Sign out</string>
+    <string name="retry">Retry</string>
+    <string name="peta">Map</string>
+    <string name="minta_permission">Please activate your location service</string>
+    <string name="bagikan_lokasi_anda">Share your location</string>
+    <string name="izin_lokasi_ditolak">Location permission denied</string>
+    <string name="ubah_izin_lokasi">Change location permission</string>
+
+</resources>

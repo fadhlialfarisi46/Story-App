@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Story App</string>
+    <string name="story_app">Story App</string>
+    <string name="masuk">Masuk</string>
+    <string name="email">Email</string>
+    <string name="kata_sandi">Kata sandi</string>
+    <string name="to_daftar">Belum punya akun? <font color="#0c87f2">Klik untuk daftar!</font></string>
+    <string name="to_masuk">Sudah punya akun? <font color="#0c87f2">Klik untuk masuk!</font></string>
+    <string name="daftar">Daftar</string>
+    <string name="nama_lengkap">Nama lengkap</string>
+    <string name="hint_unggah">Diunggah pada %s</string>
+    <string name="pengaturan">pengaturan</string>
+    <string name="tambah">Tambah</string>
+    <string name="gambar">Gambar</string>
+    <string name="galeri">Galeri</string>
+    <string name="kamera">Kamera</string>
+    <string name="pilih_gambar">Pilih gambar dari:</string>
+    <string name="deskripsi">Deskripsi</string>
+    <string name="unggah">Unggah</string>
+    <string name="eror_login">Mohon coba lagi!</string>
+    <string name="daftar_berhasil">Daftar berhasil!</string>
+    <string name="daftar_gagal">Daftar gagal, Coba lagi!</string>
+    <string name="empty_desc">Deskripsi tidak boleh kosong</string>
+    <string name="empty_story">Gambar tidak boleh kosong</string>
+    <string name="upload_success">Unggahan Berhasil</string>
+    <string name="upload_fail">Unggahan gagal</string>
+    <string name="eror_email">Format email belum sesuai</string>
+    <string name="eror_sandi">Kata sandi minimal 6 karakter</string>
+    <string name="keluar">Keluar</string>
+    <string name="retry">Coba Lagi</string>
+    <string name="peta">Peta</string>
+    <string name="minta_permission">Mohon aktifkan layanan lokasi</string>
+    <string name="bagikan_lokasi_anda">Bagikan lokasi anda</string>
+    <string name="izin_lokasi_ditolak">Izin lokasi ditolak</string>
+    <string name="ubah_izin_lokasi">Ubah izin lokasi</string>
+</resources>
