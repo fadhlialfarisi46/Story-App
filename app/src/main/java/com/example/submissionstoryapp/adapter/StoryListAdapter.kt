@@ -8,7 +8,6 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.example.submissionstoryapp.R
 import com.example.submissionstoryapp.data.local.entity.Story
 import com.example.submissionstoryapp.databinding.ListItemStoryBinding
@@ -38,10 +37,8 @@ class StoryListAdapter :
                 tvDesc.text = story.description
                 Glide.with(itemView.context)
                     .load(story.photoUrl)
-                    .apply(
-                        RequestOptions.placeholderOf(R.drawable.ic_loading)
-                            .error(R.drawable.ic_error)
-                    )
+                    .placeholder(R.drawable.ic_loading)
+                    .error(R.drawable.ic_error)
                     .into(ivStory)
 
                 itemView.setOnClickListener {
