@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import com.example.submissionstoryapp.R
+import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.databinding.ActivityMapsBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -23,10 +24,14 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
 
     private lateinit var binding: ActivityMapsBinding
     private lateinit var mMap: GoogleMap
@@ -45,13 +50,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.getAuthToken().collect{
-                if (it != null) {
-                    token = it
-                }
-            }
-        }
+        token = preferencesHelper.token
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -79,7 +78,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         lifecycleScope.launchWhenResumed {
             launch {
-                viewModel.getAllStoriesWithLocation(token).collect { result ->
+                viewModel.getAllStoriesWithLocation().collect { result ->
                     result.onSuccess { response ->
                         response.storyResponseItems.forEach { story ->
                             if (story.lat != null && story.lon != null) {
@@ -89,7 +88,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     MarkerOptions()
                                         .position(latLng)
                                         .title(story.name)
-                                        .snippet("Lat: ${story.lat}, Lon: ${story.lon}")
+                                        .snippet("Lat: ${story.lat}, Lon: ${story.lon}"),
                                 )
                                 boundsBuilder.include(latLng)
                             }
@@ -100,9 +99,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 bounds,
                                 resources.displayMetrics.widthPixels,
                                 resources.displayMetrics.heightPixels,
-                                300
-                            )
+                                300,
+                            ),
                         )
+                    }
+                    result.onFailure {
                     }
                 }
             }
@@ -112,7 +113,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun getUserLocation() {
         if (ContextCompat.checkSelfPermission(
                 this.applicationContext,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION,
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             mMap.isMyLocationEnabled = true
@@ -121,12 +122,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val latLng = LatLng(location.latitude, location.longitude)
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 8f))
                 } else {
-                    Toast.makeText(this,
+                    Toast.makeText(
+                        this,
                         getString(R.string.minta_permission),
-                        Toast.LENGTH_SHORT).show()
+                        Toast.LENGTH_SHORT,
+                    ).show()
                 }
             }
-
         } else {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
         }
@@ -134,7 +136,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val requestPermissionLauncher =
         registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
+            ActivityResultContracts.RequestPermission(),
         ) { isGranted ->
             if (isGranted) {
                 getUserLocation()

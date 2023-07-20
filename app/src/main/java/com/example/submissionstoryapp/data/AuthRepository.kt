@@ -12,10 +12,10 @@ import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
     private val apiService: ApiService,
-    private val preferencesDataSource: AuthDataStore
+    private val preferencesDataSource: AuthDataStore,
 ) {
 
-    suspend fun userLogin(email: String, password: String): Flow<Result<LoginResponse>> = flow {
+    fun userLogin(email: String, password: String): Flow<Result<LoginResponse>> = flow {
         try {
             val response = apiService.userLogin(email, password)
             emit(Result.success(response))
@@ -25,10 +25,10 @@ class AuthRepository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    suspend fun userRegister(
+    fun userRegister(
         name: String,
         email: String,
-        password: String
+        password: String,
     ): Flow<Result<RegisterResponse>> = flow {
         try {
             val response = apiService.userRegister(name, email, password)
@@ -38,10 +38,6 @@ class AuthRepository @Inject constructor(
             emit(Result.failure(e))
         }
     }.flowOn(Dispatchers.IO)
-
-    suspend fun saveAuthToken(token: String) {
-        preferencesDataSource.saveAuthToken(token)
-    }
 
     fun getAuthToken(): Flow<String?> = preferencesDataSource.getAuthToken()
 }

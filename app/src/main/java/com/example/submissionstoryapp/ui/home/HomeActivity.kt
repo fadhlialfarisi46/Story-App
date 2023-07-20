@@ -6,6 +6,7 @@ import android.provider.Settings
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -15,22 +16,27 @@ import androidx.paging.PagingData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.submissionstoryapp.adapter.LoadingStateAdapter
 import com.example.submissionstoryapp.adapter.StoryListAdapter
+import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.data.local.entity.Story
 import com.example.submissionstoryapp.databinding.ActivityHomeBinding
 import com.example.submissionstoryapp.ui.addstory.AddStoryActivity
 import com.example.submissionstoryapp.ui.login.LoginActivity
 import com.example.submissionstoryapp.ui.maps.MapsActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
 
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
+
     private lateinit var binding: ActivityHomeBinding
     private lateinit var recyclerView: RecyclerView
     private lateinit var listAdapter: StoryListAdapter
 
-    private var token: String = ""
     private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,39 +45,27 @@ class HomeActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupRecyclerView()
-
         lifecycleScope.launchWhenStarted {
-            viewModel.getAuthToken().collect{
-                if (it != null) {
-                    token = it
-                    getAllStories()
-                }
-            }
+            getAllStories()
         }
         setSwipeRefreshLayout()
         clickButton()
     }
 
-
     private fun setSwipeRefreshLayout() {
         binding.swipeRefresh.setOnRefreshListener {
             getAllStories()
-            binding.progressBar.visibility = View.VISIBLE
         }
     }
 
     private fun getAllStories() {
-        binding.progressBar.visibility = View.VISIBLE
-        binding.swipeRefresh.isRefreshing = true
-
-        lifecycleScope.launchWhenResumed {
-            repeatOnLifecycle(Lifecycle.State.RESUMED){
-                viewModel.getAllStories(token).observe(this@HomeActivity){
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.getAllStories().observe(this@HomeActivity) {
                     updateRecyclerViewData(it)
                 }
             }
         }
-
     }
 
     private fun updateRecyclerViewData(stories: PagingData<Story>) {
@@ -86,30 +80,34 @@ class HomeActivity : AppCompatActivity() {
         listAdapter = StoryListAdapter()
 
         listAdapter.addLoadStateListener { loadState ->
-            if ((loadState.source.refresh is LoadState.NotLoading && loadState.append.endOfPaginationReached && listAdapter.itemCount < 1) || loadState.source.refresh is LoadState.Error){
+            if ((loadState.source.refresh is LoadState.NotLoading && loadState.append.endOfPaginationReached && listAdapter.itemCount < 1) || loadState.source.refresh is LoadState.Error) {
                 binding.apply {
                     viewError.root.visibility = View.VISIBLE
                     progressBar.visibility = View.GONE
-                    rvStories.visibility = View.GONE
+                    rvStories.isVisible = false
                 }
-            }else{
+            } else {
                 binding.apply {
                     viewError.root.visibility = View.GONE
                     progressBar.visibility = View.GONE
-                    rvStories.visibility = View.VISIBLE
+                    rvStories.isVisible = true
                 }
             }
             binding.swipeRefresh.isRefreshing = loadState.source.refresh is LoadState.Loading
-
         }
-        recyclerView = binding.rvStories
-        recyclerView.apply {
-            itemAnimator = null
-            adapter = listAdapter.withLoadStateFooter(
-                footer = LoadingStateAdapter{
-                    listAdapter.retry()
-                }
-            )
+
+        try {
+            recyclerView = binding.rvStories
+            recyclerView.apply {
+                itemAnimator = null
+                adapter = listAdapter.withLoadStateFooter(
+                    footer = LoadingStateAdapter {
+                        listAdapter.retry()
+                    },
+                )
+            }
+        } catch (e: NullPointerException) {
+            e.printStackTrace()
         }
     }
 
@@ -124,7 +122,7 @@ class HomeActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             ivKeluar.setOnClickListener {
-                viewModel.saveAuthToken("")
+                preferencesHelper.token = ""
                 Intent(this@HomeActivity, LoginActivity::class.java).also { intent ->
                     startActivity(intent)
                     finishAffinity()

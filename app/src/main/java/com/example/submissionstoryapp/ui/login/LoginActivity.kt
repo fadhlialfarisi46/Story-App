@@ -1,25 +1,32 @@
 package com.example.submissionstoryapp.ui.login
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import com.example.submissionstoryapp.R
+import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.databinding.ActivityLoginBinding
 import com.example.submissionstoryapp.ui.home.HomeActivity
 import com.example.submissionstoryapp.ui.register.RegisterActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
 
     private lateinit var binding: ActivityLoginBinding
 
@@ -36,7 +43,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun clickButton() {
         binding.apply {
-            tvToDaftar.setOnClickListener{
+            tvToDaftar.setOnClickListener {
                 val intent = Intent(this@LoginActivity, RegisterActivity::class.java)
                 startActivity(intent)
             }
@@ -59,10 +66,13 @@ class LoginActivity : AppCompatActivity() {
                     Log.d("result", result.toString())
                     result.onSuccess { credentials ->
                         credentials.loginResult?.token?.let { token ->
-                            Log.d("token", token)
-                            viewModel.saveAuthToken(token)
+                            Log.d("token api", token)
+                            withContext(Dispatchers.Default) {
+                                preferencesHelper.token = token
+                                Log.d("token pref", preferencesHelper.token)
+                            }
+
                             Intent(this@LoginActivity, HomeActivity::class.java).also { intent ->
-//                                intent.putExtra(EXTRA_TOKEN, token)
                                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 startActivity(intent)
                             }
@@ -72,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
                         Snackbar.make(
                             binding.root,
                             getString(R.string.eror_login),
-                            Snackbar.LENGTH_SHORT
+                            Snackbar.LENGTH_SHORT,
                         ).show()
 
                         setLoading(false)
@@ -96,5 +106,4 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-
 }

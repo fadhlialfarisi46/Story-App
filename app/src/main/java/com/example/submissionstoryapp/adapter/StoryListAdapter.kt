@@ -1,7 +1,6 @@
 package com.example.submissionstoryapp.adapter
 
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
@@ -32,7 +31,6 @@ class StoryListAdapter :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(story: Story) {
             binding.apply {
-                Log.d("photoUrl", story.photoUrl)
                 tvNama.text = story.name
                 tvDesc.text = story.description
                 Glide.with(itemView.context)

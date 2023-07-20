@@ -1,5 +1,7 @@
 package com.example.submissionstoryapp.di
 
+import com.example.submissionstoryapp.data.local.PreferencesHelper
+import com.example.submissionstoryapp.data.remote.AuthInterceptor
 import com.example.submissionstoryapp.data.remote.network.ApiConfig
 import com.example.submissionstoryapp.data.remote.network.ApiService
 import dagger.Module
@@ -14,5 +16,9 @@ class ApiModule {
 
     @Provides
     @Singleton
-    fun provideApiService(): ApiService = ApiConfig.getApiService()
+    fun provideAuthInterceptor(preferencesHelper: PreferencesHelper): AuthInterceptor = AuthInterceptor(preferencesHelper)
+
+    @Provides
+    @Singleton
+    fun provideApiService(authInterceptor: AuthInterceptor): ApiService = ApiConfig.getApiService(authInterceptor)
 }

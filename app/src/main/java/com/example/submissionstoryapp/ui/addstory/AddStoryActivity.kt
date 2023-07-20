@@ -7,15 +7,14 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
@@ -24,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import com.bumptech.glide.load.resource.bitmap.TransformationUtils
 import com.example.submissionstoryapp.R
+import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.databinding.ActivityAddStoryBinding
 import com.example.submissionstoryapp.utils.MediaUtility
 import com.example.submissionstoryapp.utils.MediaUtility.reduceFileImage
@@ -42,10 +42,14 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
 class AddStoryActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
 
     private lateinit var binding: ActivityAddStoryBinding
     private lateinit var currentPhotoPath: String
@@ -64,13 +68,7 @@ class AddStoryActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        lifecycleScope.launchWhenCreated {
-            launch {
-                viewModel.getAuthToken().collect { authToken ->
-                    if (!authToken.isNullOrEmpty()) token = authToken
-                }
-            }
-        }
+        token = preferencesHelper.token
 
         clickButton()
     }
@@ -84,9 +82,9 @@ class AddStoryActivity : AppCompatActivity() {
             btnGallery.setOnClickListener { startIntentGallery() }
             btnUpload.setOnClickListener { uploadStory() }
             checkBoxLocation.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked){
+                if (isChecked) {
                     getUserLocation()
-                }else{
+                } else {
                     location = null
                 }
             }
@@ -96,7 +94,7 @@ class AddStoryActivity : AppCompatActivity() {
     private fun getUserLocation() {
         if (ContextCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION,
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -106,7 +104,7 @@ class AddStoryActivity : AppCompatActivity() {
                     Toast.makeText(
                         this,
                         getString(R.string.minta_permission),
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
 
                     binding.checkBoxLocation.isChecked = false
@@ -115,14 +113,14 @@ class AddStoryActivity : AppCompatActivity() {
         } else {
             requestPermissionLauncher.launch(
                 arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ),
             )
         }
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
+        ActivityResultContracts.RequestMultiplePermissions(),
     ) { permissions ->
         when {
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false -> {
@@ -133,7 +131,7 @@ class AddStoryActivity : AppCompatActivity() {
                     .make(
                         binding.root,
                         getString(R.string.izin_lokasi_ditolak),
-                        Snackbar.LENGTH_SHORT
+                        Snackbar.LENGTH_SHORT,
                     )
                     .setActionTextColor(getColor(R.color.white))
                     .setAction(getString(R.string.ubah_izin_lokasi)) {
@@ -179,16 +177,16 @@ class AddStoryActivity : AppCompatActivity() {
                     val imageMultipart: MultipartBody.Part = MultipartBody.Part.createFormData(
                         "photo",
                         file.name,
-                        requestImageFile
+                        requestImageFile,
                     )
 
-                    var lat:RequestBody? = null
-                    var lon:RequestBody? = null
-                    if (location != null){
+                    var lat: RequestBody? = null
+                    var lon: RequestBody? = null
+                    if (location != null) {
                         lat = location?.latitude.toString().toRequestBody("text/plain".toMediaType())
                         lon = location?.longitude.toString().toRequestBody("text/plain".toMediaType())
                     }
-                    viewModel.uploadImage(token, imageMultipart, description, lat, lon).collect { response ->
+                    viewModel.uploadImage(imageMultipart, description, lat, lon).collect { response ->
                         response.onSuccess {
                             showSnackbar(getString(R.string.upload_success))
                             finish()
@@ -201,7 +199,9 @@ class AddStoryActivity : AppCompatActivity() {
                     }
                 }
             }
-        } else showLoading(false)
+        } else {
+            showLoading(false)
+        }
     }
 
     private fun showLoading(isShow: Boolean) {
@@ -224,7 +224,7 @@ class AddStoryActivity : AppCompatActivity() {
             val photoUri = FileProvider.getUriForFile(
                 this,
                 "com.example.submissionstoryapp",
-                it
+                it,
             )
             currentPhotoPath = it.absolutePath
             intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
@@ -236,12 +236,12 @@ class AddStoryActivity : AppCompatActivity() {
         Snackbar.make(
             binding.root,
             message,
-            Snackbar.LENGTH_SHORT
+            Snackbar.LENGTH_SHORT,
         ).show()
     }
 
     private val launcherIntentCamera = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult(),
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             val file = File(currentPhotoPath).also { getFile = it }
@@ -251,7 +251,7 @@ class AddStoryActivity : AppCompatActivity() {
             val exif = ExifInterface(currentPhotoPath)
             val orientation: Int = exif.getAttributeInt(
                 ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED
+                ExifInterface.ORIENTATION_UNDEFINED,
             )
 
             val rotatedBitmap: Bitmap = when (orientation) {
@@ -279,7 +279,7 @@ class AddStoryActivity : AppCompatActivity() {
     }
 
     private val launcherIntentGallery = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult(),
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             val selectedImg: Uri = result.data?.data as Uri

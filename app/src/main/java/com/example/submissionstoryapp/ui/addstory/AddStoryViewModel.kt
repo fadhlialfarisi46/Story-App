@@ -15,17 +15,14 @@ import javax.inject.Inject
 @HiltViewModel
 class AddStoryViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val storyRepository: StoryRepository
+    private val storyRepository: StoryRepository,
 ) : ViewModel() {
 
-    fun getAuthToken(): Flow<String?> = authRepository.getAuthToken()
-
     suspend fun uploadImage(
-        token: String,
         file: MultipartBody.Part,
         description: RequestBody,
         lat: RequestBody?,
-        lon: RequestBody?
+        lon: RequestBody?,
     ): Flow<Result<FileUploadResponse>> =
-        storyRepository.uploadImage(token, file, description, lat, lon)
+        storyRepository.uploadImage(file, description, lat, lon)
 }

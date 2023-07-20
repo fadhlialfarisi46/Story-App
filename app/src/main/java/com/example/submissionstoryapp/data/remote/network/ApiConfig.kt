@@ -2,15 +2,17 @@ package com.example.submissionstoryapp.data.remote.network
 
 import com.example.submissionstoryapp.BuildConfig
 import com.example.submissionstoryapp.BuildConfig.API_BASE_URL
+import com.example.submissionstoryapp.data.remote.AuthInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class ApiConfig {
+
     companion object {
 
-        fun getApiService(): ApiService {
+        fun getApiService(authInterceptor: AuthInterceptor): ApiService {
             val loggingInterceptor = if (BuildConfig.DEBUG) {
                 HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
             } else {
@@ -18,6 +20,7 @@ class ApiConfig {
             }
 
             val client = OkHttpClient.Builder()
+                .addInterceptor(authInterceptor)
                 .addInterceptor(loggingInterceptor)
                 .build()
 

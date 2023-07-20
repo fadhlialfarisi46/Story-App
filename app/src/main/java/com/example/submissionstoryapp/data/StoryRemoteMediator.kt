@@ -11,10 +11,10 @@ import com.example.submissionstoryapp.data.local.roomdb.StoryDatabase
 import com.example.submissionstoryapp.data.remote.network.ApiService
 
 @OptIn(ExperimentalPagingApi::class)
-class StoryRemoteMediator(private val db: StoryDatabase, private val apiService: ApiService, private val token: String):
+class StoryRemoteMediator(private val db: StoryDatabase, private val apiService: ApiService) :
     RemoteMediator<Int, Story>() {
     override suspend fun load(loadType: LoadType, state: PagingState<Int, Story>): MediatorResult {
-        val page = when(loadType){
+        val page = when (loadType) {
             LoadType.REFRESH -> {
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
                 remoteKeys?.nextKey?.minus(1) ?: INITIAL_PAGE_INDEX
@@ -22,21 +22,21 @@ class StoryRemoteMediator(private val db: StoryDatabase, private val apiService:
             LoadType.PREPEND -> {
                 val remoteKeys = getRemoteKeyForFirstItem(state)
                 val prevKey = remoteKeys?.prevKey ?: return MediatorResult.Success(
-                    endOfPaginationReached = remoteKeys != null
+                    endOfPaginationReached = remoteKeys != null,
                 )
                 prevKey
             }
             LoadType.APPEND -> {
                 val remoteKeys = getRemoteKeysForLastItem(state)
                 val nextKey = remoteKeys?.nextKey ?: return MediatorResult.Success(
-                    endOfPaginationReached = remoteKeys != null
+                    endOfPaginationReached = remoteKeys != null,
                 )
                 nextKey
             }
         }
 
         try {
-            val responseData = apiService.getAllStories(token, page, state.config.pageSize)
+            val responseData = apiService.getAllStories(page, state.config.pageSize)
             val endOfPaginationReached = responseData.storyResponseItems.isEmpty()
 
             db.withTransaction {
@@ -60,7 +60,7 @@ class StoryRemoteMediator(private val db: StoryDatabase, private val apiService:
                         storyResponseItem.createdAt,
                         storyResponseItem.photoUrl,
                         storyResponseItem.lon,
-                        storyResponseItem.lat
+                        storyResponseItem.lat,
                     )
 
                     db.storyDao().insertStory(story)
@@ -68,7 +68,6 @@ class StoryRemoteMediator(private val db: StoryDatabase, private val apiService:
             }
 
             return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
-
         } catch (e: Exception) {
             return MediatorResult.Error(e)
         }
