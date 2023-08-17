@@ -3,16 +3,17 @@ package com.example.submissionstoryapp.ui.maps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import com.example.submissionstoryapp.R
 import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.databinding.ActivityMapsBinding
+import com.example.submissionstoryapp.utils.BaseActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -28,12 +29,11 @@ import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : BaseActivity<ActivityMapsBinding>(), OnMapReadyCallback {
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
 
-    private lateinit var binding: ActivityMapsBinding
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -43,7 +43,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
@@ -57,6 +56,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+    }
+
+    override fun inflateBinding(layoutInflater: LayoutInflater): ActivityMapsBinding {
+        return ActivityMapsBinding.inflate(layoutInflater)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

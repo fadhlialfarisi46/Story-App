@@ -1,6 +1,7 @@
 package com.example.submissionstoryapp.ui.addstory
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -10,11 +11,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
+import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
@@ -25,9 +27,11 @@ import com.bumptech.glide.load.resource.bitmap.TransformationUtils
 import com.example.submissionstoryapp.R
 import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.databinding.ActivityAddStoryBinding
+import com.example.submissionstoryapp.utils.BaseActivity
 import com.example.submissionstoryapp.utils.MediaUtility
 import com.example.submissionstoryapp.utils.MediaUtility.reduceFileImage
 import com.example.submissionstoryapp.utils.MediaUtility.uriToFile
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
@@ -44,14 +48,15 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import javax.inject.Inject
 
+enum class ImageType { LANDSCAPE, PORTRAIT }
+
 @ExperimentalPagingApi
 @AndroidEntryPoint
-class AddStoryActivity : AppCompatActivity() {
+class AddStoryActivity : BaseActivity<ActivityAddStoryBinding>() {
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
 
-    private lateinit var binding: ActivityAddStoryBinding
     private lateinit var currentPhotoPath: String
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -63,7 +68,6 @@ class AddStoryActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAddStoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -71,6 +75,10 @@ class AddStoryActivity : AppCompatActivity() {
         token = preferencesHelper.token
 
         clickButton()
+    }
+
+    override fun inflateBinding(layoutInflater: LayoutInflater): ActivityAddStoryBinding {
+        return ActivityAddStoryBinding.inflate(layoutInflater)
     }
 
     private fun clickButton() {
@@ -81,6 +89,8 @@ class AddStoryActivity : AppCompatActivity() {
             btnCamera.setOnClickListener { startIntentCamera() }
             btnGallery.setOnClickListener { startIntentGallery() }
             btnUpload.setOnClickListener { uploadStory() }
+            btnImagePicker.setOnClickListener { startImagePicker(ImageType.LANDSCAPE) }
+            btnImagePickerPt.setOnClickListener { startImagePicker(ImageType.PORTRAIT) }
             checkBoxLocation.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     getUserLocation()
@@ -90,6 +100,49 @@ class AddStoryActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun startImagePicker(imageType: ImageType) {
+        ImagePicker.with(this)
+            .galleryOnly()
+            .galleryMimeTypes( // Exclude gif images
+                mimeTypes = arrayOf(
+                    "image/png",
+                    "image/jpg",
+                    "image/jpeg",
+                ),
+            )
+            .apply {
+                if (imageType == ImageType.LANDSCAPE) crop(16f, 9f) else crop(9f, 16f)
+            }
+            .compress(1024) // Final image size will be less than 1 MB(Optional)
+//            .maxResultSize(1080, 1080)  //Final image resolution will be less than 1080 x 1080(Optional)
+            .createIntent { intent ->
+                startForProfileImageResult.launch(intent)
+            }
+    }
+
+    private val startForProfileImageResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            val resultCode = result.resultCode
+            val data = result.data
+
+            when (resultCode) {
+                Activity.RESULT_OK -> {
+                    // Image Uri will not be null for RESULT_OK
+                    val fileUri = data?.data!!
+
+                    uriToFile(fileUri, this).also { getFile = it }
+                    binding.ivStory.setImageURI(fileUri)
+                    Toast.makeText(this, fileUri.toString(), Toast.LENGTH_SHORT).show()
+                }
+                ImagePicker.RESULT_ERROR -> {
+                    Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
     private fun getUserLocation() {
         if (ContextCompat.checkSelfPermission(
@@ -262,15 +315,17 @@ class AddStoryActivity : AppCompatActivity() {
                 else -> bitmap
             }
 
-            try {
-                os = FileOutputStream(file)
-                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
-                os.flush()
-                os.close()
+            run {
+                try {
+                    os = FileOutputStream(file)
+                    rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
+                    os.flush()
+                    os.close()
 
-                getFile = file
-            } catch (e: Exception) {
-                e.printStackTrace()
+                    getFile = file
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
             binding.ivStory.setImageBitmap(rotatedBitmap)

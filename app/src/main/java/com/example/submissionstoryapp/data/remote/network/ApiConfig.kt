@@ -1,6 +1,5 @@
 package com.example.submissionstoryapp.data.remote.network
 
-import com.example.submissionstoryapp.BuildConfig
 import com.example.submissionstoryapp.BuildConfig.API_BASE_URL
 import com.example.submissionstoryapp.data.remote.AuthInterceptor
 import okhttp3.OkHttpClient
@@ -13,11 +12,8 @@ class ApiConfig {
     companion object {
 
         fun getApiService(authInterceptor: AuthInterceptor): ApiService {
-            val loggingInterceptor = if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-            } else {
-                HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE)
-            }
+            val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+
 
             val client = OkHttpClient.Builder()
                 .addInterceptor(authInterceptor)

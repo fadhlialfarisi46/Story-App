@@ -5,8 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.LayoutInflater
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.util.Pair
 import androidx.paging.ExperimentalPagingApi
@@ -15,29 +15,31 @@ import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.databinding.ActivitySplashScreenBinding
 import com.example.submissionstoryapp.ui.home.HomeActivity
 import com.example.submissionstoryapp.ui.login.LoginActivity
+import com.example.submissionstoryapp.utils.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
 @SuppressLint("CustomSplashScreen")
-class SplashScreenActivity : AppCompatActivity() {
+class SplashScreenActivity : BaseActivity<ActivitySplashScreenBinding>() {
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
 
     private val viewModel: SplashViewModel by viewModels()
 
-    private lateinit var binding: ActivitySplashScreenBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySplashScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         Handler(mainLooper).postDelayed({
             moveActivity()
         }, 2000)
+    }
+
+    override fun inflateBinding(layoutInflater: LayoutInflater): ActivitySplashScreenBinding {
+        return ActivitySplashScreenBinding.inflate(layoutInflater)
     }
 
     private fun moveActivity() {

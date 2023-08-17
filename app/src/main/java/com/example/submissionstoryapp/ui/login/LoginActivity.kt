@@ -3,9 +3,9 @@ package com.example.submissionstoryapp.ui.login
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import com.example.submissionstoryapp.R
@@ -13,32 +13,32 @@ import com.example.submissionstoryapp.data.local.PreferencesHelper
 import com.example.submissionstoryapp.databinding.ActivityLoginBinding
 import com.example.submissionstoryapp.ui.home.HomeActivity
 import com.example.submissionstoryapp.ui.register.RegisterActivity
+import com.example.submissionstoryapp.utils.BaseActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity<ActivityLoginBinding>() {
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
-
-    private lateinit var binding: ActivityLoginBinding
 
     private var loginJob: Job = Job()
     private val viewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         clickButton()
+    }
+
+    override fun inflateBinding(layoutInflater: LayoutInflater): ActivityLoginBinding {
+        return ActivityLoginBinding.inflate(layoutInflater)
     }
 
     private fun clickButton() {
@@ -67,10 +67,8 @@ class LoginActivity : AppCompatActivity() {
                     result.onSuccess { credentials ->
                         credentials.loginResult?.token?.let { token ->
                             Log.d("token api", token)
-                            withContext(Dispatchers.Default) {
-                                preferencesHelper.token = token
-                                Log.d("token pref", preferencesHelper.token)
-                            }
+                            preferencesHelper.token = token
+                            Log.d("token pref", preferencesHelper.token)
 
                             Intent(this@LoginActivity, HomeActivity::class.java).also { intent ->
                                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

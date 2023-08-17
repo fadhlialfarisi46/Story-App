@@ -3,9 +3,9 @@ package com.example.submissionstoryapp.ui.home
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -22,18 +22,18 @@ import com.example.submissionstoryapp.databinding.ActivityHomeBinding
 import com.example.submissionstoryapp.ui.addstory.AddStoryActivity
 import com.example.submissionstoryapp.ui.login.LoginActivity
 import com.example.submissionstoryapp.ui.maps.MapsActivity
+import com.example.submissionstoryapp.utils.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : BaseActivity<ActivityHomeBinding>() {
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
 
-    private lateinit var binding: ActivityHomeBinding
     private lateinit var recyclerView: RecyclerView
     private lateinit var listAdapter: StoryListAdapter
 
@@ -41,7 +41,7 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityHomeBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
 
         setupRecyclerView()
@@ -50,6 +50,10 @@ class HomeActivity : AppCompatActivity() {
         }
         setSwipeRefreshLayout()
         clickButton()
+    }
+
+    override fun inflateBinding(layoutInflater: LayoutInflater): ActivityHomeBinding {
+        return ActivityHomeBinding.inflate(layoutInflater)
     }
 
     private fun setSwipeRefreshLayout() {

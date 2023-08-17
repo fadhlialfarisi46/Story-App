@@ -1,8 +1,8 @@
 package com.example.submissionstoryapp.ui.register
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -11,6 +11,7 @@ import androidx.paging.ExperimentalPagingApi
 import com.example.submissionstoryapp.R
 import com.example.submissionstoryapp.databinding.ActivityRegisterBinding
 import com.example.submissionstoryapp.ui.login.LoginActivity
+import com.example.submissionstoryapp.utils.BaseActivity
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -18,19 +19,20 @@ import kotlinx.coroutines.launch
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
-class RegisterActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityRegisterBinding
+class RegisterActivity : BaseActivity<ActivityRegisterBinding>() {
 
     private var registerJob: Job = Job()
     private val viewModel: RegisterViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         clickButton()
+    }
+
+    override fun inflateBinding(layoutInflater: LayoutInflater): ActivityRegisterBinding {
+       return ActivityRegisterBinding.inflate(layoutInflater)
     }
 
     private fun clickButton() {

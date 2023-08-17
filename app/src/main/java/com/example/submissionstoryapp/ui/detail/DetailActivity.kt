@@ -1,26 +1,24 @@
 package com.example.submissionstoryapp.ui.detail
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.submissionstoryapp.R
 import com.example.submissionstoryapp.data.local.entity.Story
 import com.example.submissionstoryapp.databinding.ActivityDetailBinding
+import com.example.submissionstoryapp.utils.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class DetailActivity : AppCompatActivity() {
+class DetailActivity : BaseActivity<ActivityDetailBinding>() {
 
     companion object {
         const val EXTRA_DETAIL = "extra_detail"
     }
 
-    private lateinit var binding: ActivityDetailBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val story = intent.getParcelableExtra<Story>(EXTRA_DETAIL)
@@ -31,6 +29,10 @@ class DetailActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+    }
+
+    override fun inflateBinding(layoutInflater: LayoutInflater): ActivityDetailBinding {
+        return ActivityDetailBinding.inflate(layoutInflater)
     }
 
     override fun onSupportNavigateUp(): Boolean {
