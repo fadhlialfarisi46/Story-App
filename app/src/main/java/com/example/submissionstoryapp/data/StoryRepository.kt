@@ -50,8 +50,7 @@ class StoryRepository @Inject constructor(
         lon: RequestBody? = null,
     ): Flow<Result<FileUploadResponse>> = flow {
         try {
-            val bearerToken = generateBearerToken()
-            val response = apiService.uploadImage(bearerToken, file, description, lat, lon)
+            val response = apiService.uploadImage(file, description, lat, lon)
             emit(Result.success(response))
         } catch (e: Exception) {
             e.printStackTrace()
