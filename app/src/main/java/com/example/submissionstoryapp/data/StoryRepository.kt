@@ -34,7 +34,6 @@ class StoryRepository @Inject constructor(
 
     fun getAllStoriesWithLocation(): Flow<Result<StoriesResponses>> = flow {
         try {
-            generateBearerToken()
             val response = apiService.getAllStories(size = 10, location = 1)
             emit(Result.success(response))
         } catch (e: Exception) {
